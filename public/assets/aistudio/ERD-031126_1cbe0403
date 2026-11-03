@@ -1,0 +1,219 @@
+﻿Sistem Membership Kontraktor menghubungkan tiga aktor utama (Kontraktor, Toko Bangunan, dan CSA sebagai Admin/Principal) untuk mendigitalisasi pencatatan transaksi di tingkat ritel dan memberikan insentif berbasis poin.
+Berikut adalah rancangan alur kerja (workflow) lengkap dari masing-masing sisi pengguna beserta alur integrasi datanya.
+1. Workflow Sisi Kontraktor (Frontend / Mobile Web / App)
+Fokus utama pada sisi ini adalah kemudahan registrasi melalui referensi toko, kemudahan upload nota, dan transparansi perolehan poin.
+1. Akuisisi & Registrasi Member:
+   * Kontraktor memindai QR Code atau mengklik tautan unik (referral link) milik toko bangunan (misal: [app.domain.com/register?toko=TOKO-ABC](https://app.domain.com/register?toko=TOKO-ABC)).
+   * Sistem otomatis mengunci kode unik toko (TOKO-ABC) pada form pendaftaran.
+   * Kontraktor mengisi data diri (Nama, No. WhatsApp aktif, Spesialisasi/Bidang, Alamat) dan melakukan verifikasi OTP via WhatsApp/SMS.
+   * Sistem menerbitkan ID Member Kontraktor (berupa QR/Barcode digital) yang terafiliasi dengan Toko ABC.
+2. Transaksi & Upload Bukti Belanja (Digitalisasi Struk):
+   * Kontraktor berbelanja material di Toko ABC dan mendapatkan struk/nota fisik.
+   * Kontraktor membuka aplikasi, memilih menu Upload Transaksi, dan memfoto struk belanja.
+   * Pemrosesan Digital: Sistem menjalankan OCR (Optical Character Recognition) untuk membaca nama toko, tanggal transaksi, daftar item produk CSA, dan total nominal secara otomatis (atau kontraktor menginput nominal dan tanggal secara manual sebagai fallback).
+   * Kontraktor menekan tombol Kirim; status transaksi menjadi Menunggu Verifikasi.
+3. Perolehan & Penukaran Poin (Redeem):
+   * Setelah struk disetujui, saldo poin kontraktor bertambah secara otomatis sesuai rumus konversi yang berlaku.
+   * Kontraktor membuka katalog Promo & Hadiah yang dibuat oleh CSA.
+   * Kontraktor menukarkan poin dengan reward (voucher belanja, barang promosi, atau saldo e-wallet/transfer).
+2. Workflow Sisi Pemilik Toko Bangunan (Partner Portal)
+Sisi pemilik toko dirancang ringan agar tidak membebani operasional harian toko, namun memberikan visibilitas penuh terhadap kontraktor yang berbelanja di tempat mereka.
+1. Onboarding & Distribusi Kode Unik:
+   * Toko didaftarkan oleh Admin CSA (atau mendaftar mandiri dengan kode pelanggan CSA).
+   * Pemilik toko masuk ke dashboard toko dan mengunduh materi promosi digital berisi Link Unik / QR Code Toko (untuk dicetak sebagai tent card di meja kasir).
+2. Akuisisi Kontraktor di Toko:
+   * Saat kontraktor berbelanja, kasir/pemilik toko mengarahkan kontraktor untuk memindai QR Code toko guna mendaftar member.
+   * Pemilik toko dapat melihat daftar kontraktor yang berhasil mendaftar melalui tautan tokonya secara real-time.
+3. Validasi Transaksi & Monitoring (Opsional/Hybrid):
+   * Opsi A (Validasi oleh Toko): Toko menerima notifikasi saat kontraktor mengunggah nota belanja dari toko mereka, lalu menekan tombol Konfirmasi jika nota tersebut asli.
+   * Opsi B (Otomatis/Validasi Admin CSA): Toko hanya memantau riwayat belanja kontraktor tanpa perlu melakukan klik validasi satu per satu.
+4. Restock Barang ke CSA:
+   * Berdasarkan tren belanja kontraktor yang terekam di dashboard, pemilik toko melakukan pembelian kembali (repeat order) produk-produk yang laris ke pihak CSA.
+3. Workflow Sisi Admin CSA (Backoffice & Data Center)
+Sisi Admin adalah pusat kendali program untuk mengelola aturan promo, memvalidasi keaslian struk agar tidak terjadi kecurangan (fraud), serta mengolah data analitik.
+1. Manajemen Master Data & Aturan Poin (Rule Engine):
+   * Admin mendaftarkan data Toko Bangunan (Mitra) dan men-generate kode/link unik untuk masing-masing toko.
+   * Admin mengatur Skema Konversi Poin (misal: setiap pembelian produk CSA senilai Rp 100.000 = 10 Poin, atau poin khusus untuk SKU tertentu).
+   * Admin membuat kampanye Promo Kontraktor (misal: Double Point di bulan tertentu, katalog hadiah penukaran poin).
+2. Verifikasi Struk & Anti-Fraud (Moderation Queue):
+   * Admin menerima antrean struk digital yang diunggah oleh kontraktor.
+   * Sistem secara otomatis mendeteksi potensi duplikasi (berdasarkan image hash, nomor nota, tanggal, dan nominal yang sama) untuk mencegah satu struk diunggah berkali-kali.
+   * Admin (atau sistem AI/OCR yang sudah terlatih) memverifikasi keabsahan foto struk dan kesesuaian produk CSA di dalamnya:
+      * Approve: Nilai transaksi sah -> sistem memicu perhitungan poin otomatis ke akun kontraktor.
+      * Reject: Struk buram, tidak valid, atau bukan dari toko terdaftar -> sistem mengirim notifikasi penolakan beserta alasannya ke kontraktor.
+3. Manajemen Penukaran Poin (Fulfillment):
+   * Admin memverifikasi permintaan redeem poin dari kontraktor dan memproses pengiriman hadiah/pencairan insentif.
+4. Akuisisi Data & Analitik (Business Intelligence):
+   * Sesuai tujuan bisnis utama, CSA memanen dua aset data strategis dari dashboard analitik:
+      * Database Kontraktor Terdaftar: Profil kontraktor, sebaran wilayah, dan afiliasi toko bangunan tempat mereka mendaftar.
+      * Perilaku Belanja Kontraktor: Frekuensi belanja, rata-rata nilai transaksi (basket size), produk yang paling sering dibeli, serta performa masing-masing toko bangunan dalam menarik kontraktor.
+Ringkasan Alur Integrasi Sistem (End-to-End Flow)
+1. Admin CSA membuat program promo & men-generate link unik untuk Toko ABC.
+2. Toko ABC memasang QR/link unik di kasir dan mengajak Kontraktor A-D bergabung.
+3. Kontraktor daftar via link Toko ABC -> Data kontraktor langsung tercatat di Database CSA dengan tag afiliasi Toko ABC.
+4. Kontraktor belanja di Toko ABC -> Upload foto struk ke aplikasi.
+5. Sistem mengubah struk menjadi data transaksi digital -> Diverifikasi oleh Sistem/Admin CSA.
+6. Nilai belanja terkonversi menjadi Poin di akun Kontraktor -> CSA memperoleh data riil sell-out (penjualan dari toko ke kontraktor) untuk disandingkan dengan data sell-in (pembelian Toko ABC dari CSA).
+
+
+
+
+Berikut adalah rancangan skema database (Entity Relationship Diagram / ERD) yang dirancang untuk mendukung kebutuhan sistem Membership Kontraktor, mulai dari pelacakan afiliasi toko pendaftaran, digitalisasi struk via OCR (beserta pencegahan kecurangan/duplikasi), manajemen aturan poin yang dinamis, hingga buku besar (ledger) poin yang auditable.
+1. Visualisasi Relasi Antar Tabel (Diagram ERD)
++-------------------+          +-------------------+
+|      stores       |          |    users_admin    |
+| (Toko Bangunan)   |          |    (Admin CSA)    |
++-------------------+          +-------------------+
+| PK id             |                  | PK id
+| UK store_code     |<---+             |    role
+|    csa_cust_id    |    |             +-----+-----+
++---------+---------+    |                   |
+         |              | (Daftar via link) | (Verifikasi)
+         | (Belanja di) |                   |
+         |         +----+--------------+    |
+         |         |    contractors    |    |
+         |         +-------------------+    |
+         |         | PK id             |    |
+         |         | UK member_code    |    |
+         |         | FK reg_store_id   |    |
+         |         |    points_balance |    |
+         |         +----+---------+----+    |
+         |              |         |         |
+         v              v         |         v
++------------------------+         |    +------------------------+
+|       receipts         |---------+--->|     point_ledgers      |
+|    (Struk Belanja)     |<--------+    |   (Mutasi/Buku Poin)   |
++------------------------+              +------------------------+
+| PK id                  |              | PK id                  |
+| FK contractor_id       |              | FK contractor_id       |
+| FK store_id            |              |    reference_type      |
+| FK verified_by         |              |    reference_id        |
+| UK image_hash          |              |    amount (+/-)        |
+|    status              |              +------------------------+
++-----------+------------+                           ^
+           |                                        |
+           v                                        |
++------------------------+              +------------+-----------+
+|     receipt_items      |              |      redemptions       |
+|  (Detail Barang Struk) |              |    (Penukaran Poin)    |
++------------------------+              +------------------------+
+| PK id                  |              | PK id                  |
+| FK receipt_id          |              | FK contractor_id       |
+| FK product_id          |              | FK reward_id           |
+|    subtotal            |              |    points_used         |
++-----------+------------+              +------------+-----------+
+           |                                        |
+           v                                        v
++------------------------+              +------------------------+
+|     products_csa       |              |        rewards         |
+|  (Master Produk CSA)   |              | (Katalog Promo/Hadiah) |
++------------------------+              +------------------------+
+
+2. Detail Struktur Tabel (Schema Specification)
+A. Modul Entitas & Akuisisi (Users & Partners)
+1. Tabel stores (Master Toko Bangunan)
+Menyimpan data toko bangunan yang membeli barang dari CSA dan menjadi titik pendaftaran kontraktor.
+* id (BIGINT / UUID, PK)
+* csa_customer_id (VARCHAR, Unique) — ID Pelanggan toko di sistem ERP internal CSA untuk menyandingkan data sell-in vs sell-out.
+* store_code (VARCHAR, Unique, Indexed) — Kode unik untuk parameter URL/QR registrasi (contoh: TOKO-ABC).
+* name (VARCHAR) — Nama toko bangunan.
+* owner_name (VARCHAR)
+* phone_wa (VARCHAR, Unique) — Nomor login pemilik toko.
+* address, city, province (TEXT / VARCHAR)
+* qr_code_url (VARCHAR) — Path gambar QR siap cetak.
+* is_active (BOOLEAN)
+* created_at, updated_at (TIMESTAMP)
+2. Tabel contractors (Master Member Kontraktor)
+Menyimpan profil kontraktor beserta afiliasi toko tempat mereka pertama kali mendaftar.
+* id (BIGINT / UUID, PK)
+* member_code (VARCHAR, Unique) — ID Member digital (contoh: KTR-2026-0001).
+* registered_store_id (BIGINT, FK -> stores.id) — Mengunci asal toko tempat kontraktor mendaftar pertama kali.
+* full_name (VARCHAR)
+* phone_wa (VARCHAR, Unique, Indexed) — Digunakan untuk login & pengiriman OTP WhatsApp.
+* specialty (VARCHAR) — Kategori: Sipil, Interior, ME, Renovasi, dll.
+* points_balance (INT, Default: 0) — Cache saldo poin aktif saat ini.
+* tier_level (ENUM: 'SILVER', 'GOLD', 'PLATINUM')
+* status (ENUM: 'PENDING_OTP', 'ACTIVE', 'SUSPENDED')
+* created_at, updated_at (TIMESTAMP)
+3. Tabel users_admin (Pengelola Backoffice CSA)
+* id (BIGINT, PK)
+* name, email, password_hash (VARCHAR)
+* role (ENUM: 'SUPERADMIN', 'VERIFIER', 'ANALYST') — Memisahkan tim verifikator struk dan tim manajemen promo.
+* created_at (TIMESTAMP)
+B. Modul Transaksi & Digitalisasi Struk (Receipts & OCR)
+4. Tabel receipts (Header Struk Belanja)
+Menyimpan bukti transaksi yang diunggah setiap kali kontraktor berbelanja.
+* id (BIGINT / UUID, PK)
+* contractor_id (BIGINT, FK -> contractors.id, Indexed) — Kontraktor yang berbelanja.
+* store_id (BIGINT, FK -> stores.id, Indexed) — Toko tempat transaksi berlangsung (bisa di Toko ABC atau toko mitra lainnya).
+* receipt_number (VARCHAR, Indexed) — Nomor nota fisik dari toko.
+* receipt_date (DATE, Indexed) — Tanggal yang tertera pada nota.
+* image_url (VARCHAR) — URL foto struk di Cloud Storage/S3.
+* image_hash (VARCHAR(64), Unique) — Hash SHA-256 / pHash dari file gambar untuk menolak upload foto yang sama persis.
+* ocr_raw_json (JSONB) — Menyimpan hasil mentah pembacaan AI/OCR sebelum dikoreksi admin.
+* total_gross_amount (DECIMAL(15,2)) — Total keseluruhan nilai di nota.
+* total_eligible_amount (DECIMAL(15,2)) — Total nilai khusus produk CSA yang berhak mendapat poin.
+* points_earned (INT, Default: 0) — Jumlah poin yang dihasilkan dari struk ini.
+* status (ENUM: 'PENDING', 'PROCESSING_OCR', 'APPROVED', 'REJECTED')
+* rejection_reason (VARCHAR, Nullable) — Alasan jika ditolak (misal: "Nota buram", "Nota duplikat").
+* verified_by (BIGINT, FK -> users_admin.id, Nullable)
+* verified_at, created_at, updated_at (TIMESTAMP)
+Catatan Anti-Fraud (Composite Index): Buat Unique/Warning Index pada kombinasi (store_id, receipt_number, receipt_date, total_gross_amount) untuk memberi peringatan ke Admin jika ada kontraktor yang memfoto ulang struk yang sama dari sudut berbeda (sehingga lolos dari image_hash).
+5. Tabel receipt_items (Detail Item Belanja pada Struk)
+Memecah isi struk per baris barang agar CSA mendapatkan data analitik produk apa saja yang dibeli kontraktor.
+* id (BIGINT, PK)
+* receipt_id (BIGINT, FK -> receipts.id)
+* product_id (BIGINT, FK -> products_csa.id, Nullable) — Terisi jika item teridentifikasi sebagai produk milik CSA.
+* raw_item_name (VARCHAR) — Teks asli yang terbaca di nota (contoh: "Cat Tembok 5Kg").
+* qty (DECIMAL(10,2))
+* unit_price (DECIMAL(15,2))
+* subtotal (DECIMAL(15,2))
+* is_eligible (BOOLEAN) — Penanda apakah item ini dihitung dalam konversi poin.
+6. Tabel products_csa (Master Produk CSA)
+* id (BIGINT, PK)
+* sku_code (VARCHAR, Unique)
+* product_name (VARCHAR)
+* category, brand (VARCHAR)
+* ocr_keywords (JSONB) — Daftar kata kunci singkatan nota toko (misal: ["aquaproof", "aqprf", "cat pelapis"]) untuk memudahkan pencocokan otomatis saat OCR.
+* base_point_multiplier (DECIMAL(5,2), Default: 1.0) — Pengali poin khusus jika produk ini sedang dipromosikan.
+C. Modul Poin, Promo & Penukaran (Loyalty & Rule Engine)
+7. Tabel campaigns_promo (Aturan Promo & Konversi Poin CSA)
+Mengakomodasi fitur "CSA membuat promo kontraktor" dan konversi nilai belanja menjadi poin.
+* id (BIGINT, PK)
+* title (VARCHAR) — Nama program promo.
+* rule_type (ENUM: 'NOMINAL_CONVERSION', 'PRODUCT_BONUS', 'TIER_MULTIPLIER')
+* min_transaction_amount (DECIMAL(15,2)) — Syarat minimal belanja.
+* conversion_rate_amount (DECIMAL(15,2)) — Misal: 100000 (Setiap kelipatan Rp 100.000).
+* points_rewarded (INT) — Misal: 10 (Mendapat 10 poin).
+* start_date, end_date (DATETIME)
+* is_active (BOOLEAN)
+8. Tabel point_ledgers (Buku Besar Mutasi Poin)
+Tabel immutable (hanya boleh INSERT, tidak boleh UPDATE/DELETE) untuk mencatat riwayat keluar-masuk poin secara akurat layaknya mutasi rekening bank.
+* id (BIGINT, PK)
+* contractor_id (BIGINT, FK -> contractors.id, Indexed)
+* type (ENUM: 'EARN_RECEIPT', 'BONUS_PROMO', 'REDEEM_REWARD', 'ADJUSTMENT_ADMIN', 'EXPIRED')
+* reference_id (BIGINT) — Mengacu ke receipts.id (jika EARN) atau redemptions.id (jika REDEEM).
+* amount (INT) — Bernilai positif (+50) saat dapat poin, dan negatif (-200) saat tukar poin.
+* balance_after (INT) — Saldo poin kontraktor tepat setelah transaksi ini tercatat.
+* description (VARCHAR)
+* created_at (TIMESTAMP)
+9. Tabel rewards (Katalog Hadiah Penukaran Poin)
+* id (BIGINT, PK)
+* name (VARCHAR) — Nama hadiah (Voucher Belanja, Jaket Proyek, E-Wallet, dll).
+* points_required (INT) — Harga hadiah dalam satuan poin.
+* stock_qty (INT)
+* image_url (VARCHAR)
+* is_active (BOOLEAN)
+10. Tabel redemptions (Transaksi Penukaran Poin)
+* id (BIGINT, PK)
+* contractor_id (BIGINT, FK -> contractors.id)
+* reward_id (BIGINT, FK -> rewards.id)
+* points_used (INT)
+* status (ENUM: 'REQUESTED', 'APPROVED', 'SHIPPED', 'COMPLETED', 'CANCELLED')
+* delivery_info (JSONB) — Alamat pengiriman atau nomor tujuan E-Wallet/Rekening.
+* processed_by (BIGINT, FK -> users_admin.id, Nullable)
+* created_at, updated_at (TIMESTAMP)
+3. Keunggulan Arsitektur Database Ini untuk Kebutuhan CSA
+1. Pemisahan Toko Akuisisi vs Toko Transaksi: Pada tabel contractors terdapat registered_store_id, sedangkan pada tabel receipts terdapat store_id. Ini memungkinkan CSA melacak: "Kontraktor A mendaftar melalui link Toko ABC, namun bulan ini ia juga berbelanja di Toko XYZ".
+2. Kesiapan Analitik Sell-In vs Sell-Out: Dengan adanya csa_customer_id di tabel stores dan rincian product_id di receipt_items, tim Data/BI CSA dapat dengan mudah membuat query perbandingan antara jumlah barang yang dibeli Toko ABC dari CSA (Sell-In) dengan jumlah barang yang terjual ke kontraktor dari Toko ABC (Sell-Out).
+3. Penyimpanan ocr_raw_json (JSONB): Struk toko bangunan sering kali ditulis tangan atau menggunakan printer dot-matrix dengan singkatan yang beragam. Menyimpan hasil mentah OCR dalam kolom JSONB sangat membantu untuk melatih ulang (fine-tuning) kamus kata kunci produk (ocr_keywords) tanpa kehilangan histori pembacaan awal.

@@ -1,0 +1,6 @@
+{
+  "name": "Membership Kontraktor CSA",
+  "description": "Sistem Ekosistem Membership Kontraktor, Toko Bangunan Mitra, dan Principal CSA dengan Digitalisasi Struk OCR, Aturan Poin, dan Anti-Fraud.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
