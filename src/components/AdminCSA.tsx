@@ -27,7 +27,6 @@ import {
   Eye,
   FileCode,
   Tag,
-  Database,
   Building,
   Award,
   BarChart3,
@@ -42,7 +41,6 @@ import {
   ArrowRight,
   LogOut,
 } from 'lucide-react';
-import { ErdArchitectureViewer } from './ErdArchitectureViewer.tsx';
 
 interface AdminCSAProps {
   admin: UserAdmin;
@@ -57,7 +55,6 @@ interface AdminCSAProps {
   pointLedgers: PointLedger[];
   onRefreshData: () => Promise<void>;
   onLogout?: () => void;
-  onOpenErd?: () => void;
 }
 
 export const AdminCSA: React.FC<AdminCSAProps> = ({
@@ -73,9 +70,8 @@ export const AdminCSA: React.FC<AdminCSAProps> = ({
   pointLedgers,
   onRefreshData,
   onLogout,
-  onOpenErd,
 }) => {
-  const [subTab, setSubTab] = useState<'moderation' | 'redemptions' | 'rules' | 'analytics' | 'erd'>('moderation');
+  const [subTab, setSubTab] = useState<'moderation' | 'redemptions' | 'rules' | 'analytics'>('moderation');
 
   // Moderation state
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
@@ -382,18 +378,6 @@ export const AdminCSA: React.FC<AdminCSAProps> = ({
         >
           <BarChart3 className="w-4 h-4 text-emerald-400" />
           Business Intelligence (Sell-In vs Sell-Out)
-        </button>
-
-        <button
-          onClick={() => setSubTab('erd')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all ${
-            subTab === 'erd'
-              ? 'bg-indigo-600 text-white shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-          }`}
-        >
-          <Database className="w-4 h-4 text-indigo-400" />
-          Alur & ERD Sistem
         </button>
       </div>
 
@@ -898,15 +882,6 @@ export const AdminCSA: React.FC<AdminCSAProps> = ({
               </table>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* ------------------------------------------------------------- */}
-      {/* SUB-TAB 5: ALUR & ERD SISTEM (AKSES KHUSUS ADMIN CSA) */}
-      {/* ------------------------------------------------------------- */}
-      {subTab === 'erd' && (
-        <div className="pt-2">
-          <ErdArchitectureViewer />
         </div>
       )}
 

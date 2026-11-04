@@ -33,13 +33,11 @@ import { ContractorPortal } from './components/ContractorPortal.tsx';
 import { StorePortal } from './components/StorePortal.tsx';
 import { AdminCSA } from './components/AdminCSA.tsx';
 import { UnifiedLoginPanel } from './components/UnifiedLoginPanel.tsx';
-import { ErdArchitectureViewer } from './components/ErdArchitectureViewer.tsx';
 import { RegisterModal } from './components/RegisterModal.tsx';
 import {
   HardHat,
   Store as StoreIcon,
   Building,
-  Database,
   RotateCcw,
   Smartphone,
   Monitor,
@@ -66,7 +64,7 @@ export default function App() {
   const [redemptions, setRedemptions] = useState<Redemption[]>(initialRedemptions);
 
   // Active Actor Mode
-  const [activePortal, setActivePortal] = useState<'contractor' | 'store' | 'admin' | 'erd'>('contractor');
+  const [activePortal, setActivePortal] = useState<'contractor' | 'store' | 'admin'>('contractor');
 
   // Active Personas
   const [currentContractor, setCurrentContractor] = useState<Contractor>(initialContractors[0]);
@@ -207,13 +205,6 @@ export default function App() {
     }
   }, []);
 
-  // Safeguard: Ensure 'erd' portal is ONLY accessible to Admin CSA
-  useEffect(() => {
-    if (activePortal === 'erd' && (!userSession || userSession.actorType !== 'ADMIN')) {
-      setActivePortal(userSession ? (userSession.actorType === 'CONTRACTOR' ? 'contractor' : 'store') : 'contractor');
-    }
-  }, [activePortal, userSession]);
-
   // Pending moderation count for badge
   const pendingReceiptsCount = receipts.filter(r => r.status === 'PENDING').length;
 
@@ -258,46 +249,23 @@ export default function App() {
             {userSession ? (
               <div className="flex items-center gap-2">
                 <nav className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl border border-slate-200 dark:border-slate-700/60 text-xs font-bold">
-                  {/* ADMIN CSA: Has Backoffice tab and Alur & ERD tab */}
+                  {/* ADMIN CSA */}
                   {userSession.actorType === 'ADMIN' ? (
-                    <>
-                      <button
-                        onClick={() => setActivePortal('admin')}
-                        className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl transition-all ${
-                          activePortal === 'admin'
-                            ? 'bg-slate-900 text-white shadow-sm'
-                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
-                        }`}
-                      >
-                        <Building className="w-4 h-4" />
-                        <span>Admin CSA</span>
-                        {pendingReceiptsCount > 0 && (
-                          <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping ml-1" />
-                        )}
-                      </button>
-
-                      {/* Menu Alur & ERD HANYA muncul di Akun Admin CSA */}
-                      <button
-                        onClick={() => setActivePortal('erd')}
-                        className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl transition-all ${
-                          activePortal === 'erd'
-                            ? 'bg-indigo-600 text-white shadow-sm'
-                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
-                        }`}
-                        title="Akses Dokumentasi Alur & ERD (Khusus Admin CSA)"
-                      >
-                        <Database className="w-4 h-4 text-indigo-400" />
-                        <span className="hidden sm:inline">Alur & ERD</span>
-                      </button>
-                    </>
+                    <div className="flex items-center gap-2 px-3 sm:px-4 py-2 text-slate-900 dark:text-slate-100 font-bold">
+                      <Building className="w-4 h-4" />
+                      <span>Admin CSA</span>
+                      {pendingReceiptsCount > 0 && (
+                        <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping ml-1" />
+                      )}
+                    </div>
                   ) : userSession.actorType === 'CONTRACTOR' ? (
-                    /* KONTRAKTOR: Portal Kontraktor only, no ERD */
+                    /* KONTRAKTOR */
                     <div className="flex items-center gap-2 px-3 sm:px-4 py-2 text-amber-600 dark:text-amber-400 font-bold">
                       <HardHat className="w-4 h-4" />
                       <span>Portal Member Kontraktor</span>
                     </div>
                   ) : (
-                    /* TOKO BANGUNAN: Portal Toko only, no ERD */
+                    /* TOKO BANGUNAN */
                     <div className="flex items-center gap-2 px-3 sm:px-4 py-2 text-blue-600 dark:text-blue-400 font-bold">
                       <StoreIcon className="w-4 h-4" />
                       <span>Portal Toko Bangunan</span>
@@ -449,42 +417,7 @@ export default function App() {
             pointLedgers={pointLedgers}
             onRefreshData={fetchState}
             onLogout={handleLogout}
-            onOpenErd={() => setActivePortal('erd')}
           />
-        )}
-
-        {/* ALUR & ERD VIEW: HANYA MUNCUL DI AKUN ADMIN CSA */}
-        {userSession && userSession.actorType === 'ADMIN' && activePortal === 'erd' && (
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-indigo-50 dark:bg-indigo-950/40 p-4 rounded-3xl border border-indigo-200 dark:border-indigo-800">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-indigo-600 text-white rounded-2xl shadow-sm">
-                  <Database className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-600 text-white uppercase tracking-wider">
-                      Akses Khusus Admin CSA
-                    </span>
-                    <h3 className="font-black text-sm text-indigo-950 dark:text-indigo-100">
-                      Diagram Alur & ERD Arsitektur Membership
-                    </h3>
-                  </div>
-                  <p className="text-xs text-indigo-700 dark:text-indigo-300 mt-0.5">
-                    Visualisasi workflow, relasi 1:N antar tabel, lifecycle moderasi struk, dan rule engine poin.
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setActivePortal('admin')}
-                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 self-start sm:self-auto"
-              >
-                <Building className="w-3.5 h-3.5" />
-                Kembali ke Backoffice
-              </button>
-            </div>
-            <ErdArchitectureViewer />
-          </div>
         )}
       </main>
 
